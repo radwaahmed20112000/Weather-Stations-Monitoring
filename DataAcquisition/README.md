@@ -2,7 +2,10 @@
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> origin/main
 Step 1: Get Kafka
 
 	Download the latest Kafka release and extract it:
@@ -22,4 +25,7 @@ Step 2: Start the Kafka environment
 You can use this to confirm this API works on your machine.
 	./bin/kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic station --from-beginning
 
+<<<<<<< HEAD
 >>>>>>> origin/master
+=======
+>>>>>>> origin/main
