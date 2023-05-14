@@ -18,7 +18,7 @@ public class Bitcask {
     private final String directoryPath;
     private final long fileSizeThreshold = 1000L; //1 MB
     private boolean compactionBlocking;
-    private final Hashtable<Integer, String[]> keyDir;
+    private final Hashtable<Long, String[]> keyDir;
 
     public Bitcask(String directoryName) throws Exception {
         this.directoryPath =  this.workingDir + directoryName;
@@ -31,7 +31,7 @@ public class Bitcask {
         this.compactionBlocking = false;
         this.keyDir = new Hashtable<>();
     }
-    public void put(int key, String value) throws IOException {
+    public void put(long key, String value) throws IOException {
         if(compactionBlocking)
             throw new RuntimeException("Compaction is replacing files now, try again after few seconds.");
         String fileName = getActiveFile();
@@ -42,7 +42,7 @@ public class Bitcask {
         long valuePos = offset + 2 * Integer.BYTES;
         this.keyDir.put(key, new String[]{fileName, Integer.toString(value.length()), Long.toString(valuePos)});
     }
-    public String get(int key) throws Exception {
+    public String get(long key) throws Exception {
         if(compactionBlocking)
             throw new RuntimeException("Compaction is replacing files now, try again after few seconds.");
         if(this.keyDir.containsKey(key)){
@@ -79,10 +79,10 @@ public class Bitcask {
         }
 
     }
-    private long appendToFile(RandomAccessFile file, int key, String value, int valueSize, long valuePos, boolean hintFiles) throws IOException {
+    private long appendToFile(RandomAccessFile file, long key, String value, int valueSize, long valuePos, boolean hintFiles) throws IOException {
         long offset = file.length();
         file.seek(offset);
-        file.writeInt(key);
+        file.writeLong(key);
         file.writeInt(valueSize);
         if(hintFiles)
             file.writeLong(valuePos);
@@ -101,7 +101,7 @@ public class Bitcask {
             throw new RuntimeException("Compaction is replacing files now, try again after few seconds.");
         Instant instant = Instant.now();
         long timestamp = instant.toEpochMilli();
-        Hashtable<Integer, String[]> newKeyDir = new Hashtable<>();
+        Hashtable<Long, String[]> newKeyDir = new Hashtable<>();
         String newDirectoryPath = this.workingDir + "compactTemp";
         File newDirectory = new File(newDirectoryPath);
         boolean success = newDirectory.mkdir();
@@ -120,7 +120,7 @@ public class Bitcask {
                     while (offsetCurrent < f.length()) {
                         try(RandomAccessFile currentFile = new RandomAccessFile(f.getAbsolutePath(), "r")) {
                             currentFile.seek(offsetCurrent);
-                            int key = currentFile.readInt();
+                            long key = currentFile.readLong();
                             int valueSize = currentFile.readInt();
                             long valuePos = offsetCurrent + 2 * Integer.BYTES;
                             if (this.keyDir.containsKey(key)) {
@@ -154,7 +154,7 @@ public class Bitcask {
         //move files to the current directory and remove the compact temp folder
         this.compactionBlocking = true;
         //move new values to the keyDir:
-        for(int key: newKeyDir.keySet())
+        for(long key: newKeyDir.keySet())
             this.keyDir.put(key, newKeyDir.get(key));
         if(files != null) {
             for (File file : files) {
@@ -185,7 +185,7 @@ public class Bitcask {
     }
     public void printHashTable()
     {
-        for(int key : keyDir.keySet())
+        for(long key : keyDir.keySet())
         {
             String[] values = keyDir.get(key);
             System.out.println("key " + key + "values: " + Arrays.toString(values));
@@ -204,7 +204,7 @@ public class Bitcask {
                     try(RandomAccessFile fileAccess = new RandomAccessFile(file, "r")) {
                         while (offset < file.length()) {
                             fileAccess.seek(offset);
-                            int key = fileAccess.readInt();
+                            long key = fileAccess.readInt();
                             int valueSize = fileAccess.readInt();
                             long valuePos = fileAccess.readLong();
                             keyDir.put(key, new String[]{"/" + file.getName().replace("-hint", ""), Integer.toString(valueSize), Long.toString(valuePos)});
@@ -225,7 +225,7 @@ public class Bitcask {
             byte[] bytes;
             while (offset < file.length()) {
                 file.seek(offset);
-                int key = file.readInt();
+                long key = file.readInt();
                 int valueSize = file.readInt();
                 bytes = new byte[valueSize];
                 file.read(bytes);
@@ -240,7 +240,7 @@ public class Bitcask {
         try(RandomAccessFile file = new RandomAccessFile(this.directoryPath + filePath, "r")) {
             while (offset < file.length()) {
                 file.seek(offset);
-                int key = file.readInt();
+                long key = file.readLong();
                 int valueSize = file.readInt();
                 long valuePos = file.readLong();
                 System.out.println(key + " : " + valueSize + " , " + valuePos);

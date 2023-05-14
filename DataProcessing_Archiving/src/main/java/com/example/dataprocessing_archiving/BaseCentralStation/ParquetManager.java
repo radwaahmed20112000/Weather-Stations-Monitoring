@@ -18,7 +18,7 @@ import java.util.List;
 
 public class ParquetManager implements Runnable {
 
-    private final List<String> statuses;
+    private final List<Status> statuses;
     private String path;
     private static ParquetWriter<GenericRecord> writer;
 
@@ -33,7 +33,7 @@ public class ParquetManager implements Runnable {
             .endRecord();
 
 
-    public ParquetManager(List<String> statuses) {
+    public ParquetManager(List<Status> statuses) {
         this.statuses = statuses;
         this.path = "";
     }
@@ -65,31 +65,22 @@ public class ParquetManager implements Runnable {
         try {
             GenericRecord record = new GenericData.Record(schema);
 
-            for (String status : statuses) {
-                Status parsedMessage = Utils.parseMessage(status);
+            for (Status status : statuses) {
 
-                String generatedPath = generatePath(parsedMessage);
+                String generatedPath = generatePath(status);
                 if(generatedPath.compareTo(this.path) != 0) {
                     updateWriter(generatedPath);
                     System.out.println("hi");
                 }
-                record.put("battery_status", parsedMessage.getBatteryStatus());
-                record.put("status_timestamp", parsedMessage.getStatusTimestamp());
-                record.put("weather_humidity", parsedMessage.getHumidity());
-                record.put("weather_temperature", parsedMessage.getTemperature());
-                record.put("weather_wind_speed", parsedMessage.getWindSpeed());
+                record.put("battery_status", status.getBatteryStatus());
+                record.put("status_timestamp", status.getStatusTimestamp());
+                record.put("weather_humidity", status.getHumidity());
+                record.put("weather_temperature", status.getTemperature());
+                record.put("weather_wind_speed", status.getWindSpeed());
 
                 // write data
                 writer.write(record);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void closeWriter()  {
-        try {
-            writer.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
