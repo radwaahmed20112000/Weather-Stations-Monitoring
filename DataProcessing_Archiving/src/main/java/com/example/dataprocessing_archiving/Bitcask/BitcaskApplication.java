@@ -1,4 +1,4 @@
-package com.example.Bitcask;
+package com.example.dataprocessing_archiving.Bitcask;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

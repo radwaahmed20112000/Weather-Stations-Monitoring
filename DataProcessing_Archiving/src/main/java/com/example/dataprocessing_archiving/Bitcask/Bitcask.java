@@ -1,4 +1,4 @@
-package com.example.Bitcask;
+package com.example.dataprocessing_archiving.Bitcask;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -15,10 +15,10 @@ import java.util.Objects;
 //keyDir: key --> {fileName, valueSize, valuePos}
 public class Bitcask {
     private final String workingDir = "/home/aya/Weather-Stations-Monitoring-main/DataProcessing_Archiving/src/main/java/com/example/Bitcask/";
-    private String directoryPath;
+    private final String directoryPath;
     private final long fileSizeThreshold = 1000L; //1 MB
     private boolean compactionBlocking;
-    private Hashtable<Integer, String[]> keyDir;
+    private final Hashtable<Integer, String[]> keyDir;
 
     public Bitcask(String directoryName) throws Exception {
         this.directoryPath =  this.workingDir + directoryName;
