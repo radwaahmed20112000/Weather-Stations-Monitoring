@@ -69,7 +69,7 @@ public class WeatherStationMock {
 
     public String getWeatherStatusMessage() {
         // Implement logic to send message to Kafka queueing service
-        System.out.println("Sending message to Kafka: " + this.message);
+        //System.out.println("Sending message to Kafka: " + this.message);
         return this.message ;
     }
     

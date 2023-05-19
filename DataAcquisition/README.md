@@ -19,4 +19,9 @@ Step 2: Start the Kafka environment
 	
 You can use this to confirm this API works on your machine.
 	./bin/kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic station --from-beginning
+	
+	
+You can use this to see detected raining messages 
+	./bin/kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic station --from-beginning
+	
 
