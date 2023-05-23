@@ -1,4 +1,4 @@
-package com.example.dataprocessing_archiving.BaseCentralStation;
+package com.example.dataprocessing_archiving.BaseCentralStation.DockerImage;
 
 import org.json.JSONObject;
 

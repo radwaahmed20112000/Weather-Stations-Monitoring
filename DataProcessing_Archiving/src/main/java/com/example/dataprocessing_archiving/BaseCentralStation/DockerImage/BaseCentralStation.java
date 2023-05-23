@@ -1,6 +1,7 @@
-package com.example.dataprocessing_archiving.BaseCentralStation;
+package com.example.dataprocessing_archiving.BaseCentralStation.DockerImage;
 
 import com.example.dataprocessing_archiving.Bitcask.Bitcask;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -21,25 +22,33 @@ public class BaseCentralStation {
 
         Properties properties = new Properties();
         properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                "127.0.0.1:9092");
-        properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                StringSerializer.class.getName());
-        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                StringSerializer.class.getName());
+                "localhost:9092");
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "my-consumer-group");
+        properties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        properties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(properties);
 
         consumer.subscribe(Collections.singletonList("station"));
-        Bitcask bitcask = new Bitcask("test");
+        ParquetManager parquetManager = new ParquetManager();
+
+//        Bitcask bitcask = new Bitcask("test");
         List<Status> statuses = new ArrayList<>();
 
         while (true) {
             ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
             for (ConsumerRecord<String, String> record : records) {
+                if (record.value().length() == 0) continue;
                 System.out.println(record.value());
                 Status status = Utils.parseMessage(record.value());
                 statuses.add(status);
-                bitcask.put(status.getStationID(), record.value());
+//                bitcask.put(status.getStationID(), record.value());
+            }
+            if(statuses.size() == 10000) {
+                parquetManager.setStatuses(statuses);
+                statuses = new ArrayList<>();
+                Thread thread = new Thread(parquetManager);
+                thread.start();
             }
         }
 

@@ -1,4 +1,4 @@
-package com.example.dataprocessing_archiving.BaseCentralStation;
+package com.example.dataprocessing_archiving.BaseCentralStation.DockerImage;
 
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
@@ -14,13 +14,14 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.time.temporal.IsoFields;
+import java.util.HashMap;
 import java.util.List;
 
 public class ParquetManager implements Runnable {
 
-    private final List<Status> statuses;
-    private String path;
-    private static ParquetWriter<GenericRecord> writer;
+    private List<Status> statuses;
+    private static final HashMap<Long, String> paths = new HashMap<>();
+    private static final HashMap<Long, ParquetWriter<GenericRecord>> writers = new HashMap<>();
 
     // Define the schema for the Parquet file
     private static final Schema schema = SchemaBuilder.record("StationStatus")
@@ -33,11 +34,6 @@ public class ParquetManager implements Runnable {
             .endRecord();
 
 
-    public ParquetManager(List<Status> statuses) {
-        this.statuses = statuses;
-        this.path = "";
-    }
-
     private String generatePath(Status parsedMessage) {
         Instant instant = Instant.ofEpochSecond(parsedMessage.getStatusTimestamp());
         LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
@@ -49,16 +45,16 @@ public class ParquetManager implements Runnable {
         return "Station" + parsedMessage.getStationID() + "/" + year + "/" + month + "/" + week + ".parquet";
     }
 
-    private void updateWriter(String generatedPath) throws IOException {
-        this.path = generatedPath;
-        Utils.pathCheck(path);
+    private void updateWriter(String generatedPath, long stationID) throws IOException {
+        paths.put(stationID, generatedPath);
+        Utils.pathCheck(generatedPath);
         CompressionCodecName codec = CompressionCodecName.SNAPPY;
-        if(writer != null) writer.close();
-        writer = AvroParquetWriter.<GenericRecord>builder(new Path(path))
+        if(writers.get(stationID) != null) writers.get(stationID).close();
+        writers.put(stationID, AvroParquetWriter.<GenericRecord>builder(new Path(generatedPath))
                 .withSchema(schema)
                 .withCompressionCodec(codec)
                 .withDataModel(GenericData.get())
-                .build();
+                .build());
     }
 
     public void run() {
@@ -67,11 +63,11 @@ public class ParquetManager implements Runnable {
 
             for (Status status : statuses) {
 
+                long stationID = status.getStationID();
                 String generatedPath = generatePath(status);
-                if(generatedPath.compareTo(this.path) != 0) {
-                    updateWriter(generatedPath);
-                    System.out.println("hi");
-                }
+                if(generatedPath.compareTo(paths.get(stationID)) != 0)
+                    updateWriter(generatedPath, stationID);
+
                 record.put("battery_status", status.getBatteryStatus());
                 record.put("status_timestamp", status.getStatusTimestamp());
                 record.put("weather_humidity", status.getHumidity());
@@ -79,11 +75,15 @@ public class ParquetManager implements Runnable {
                 record.put("weather_wind_speed", status.getWindSpeed());
 
                 // write data
-                writer.write(record);
+                writers.get(stationID).write(record);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void setStatuses(List<Status> statuses) {
+        this.statuses = statuses;
     }
 }
 
