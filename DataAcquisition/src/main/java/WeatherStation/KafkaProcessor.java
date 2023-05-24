@@ -10,6 +10,14 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KafkaStreams;
+import org.apache.kafka.streams.StreamsBuilder;
+import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.Produced;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -17,52 +25,39 @@ import java.util.Properties;
 
 public class KafkaProcessor {
     public static void main(String[] args) {
-        // Set up Kafka consumer properties
-        Properties consumerProperties = new Properties();
-        consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        consumerProperties.put(ConsumerConfig.GROUP_ID_CONFIG, "raining-trigger-consumer");
-        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+    	 // Set up Kafka Streams configuration
+        Properties config = new Properties();
+        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "kafka-streams");
+        config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+        config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
 
-        // Create a Kafka consumer
-        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerProperties);
+        // Build the Kafka Streams topology
+        StreamsBuilder builder = new StreamsBuilder();
 
-        // Subscribe to the input topic
-        consumer.subscribe(Collections.singleton("station"));
+        // Read from the input topic
+        KStream<String, String> inputTopic = builder.stream("station");
 
-        // Set up Kafka producer properties
-        Properties producerProperties = new Properties();
-        producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "Kafka-Service:9092");
-        producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        // Process the stream
+        inputTopic
+                .filter((key, value) -> {
+                    // Parse the humidity value from the message
+                	System.out.println(value) ;
+                    int humidity = parseHumidityFromMessage(value);
+                    // Check if humidity is higher than 70%
+                    return humidity > 70;
+                })
+                .mapValues(value -> createSpecialMessage(value))
+                .to("processor", Produced.with(Serdes.String(), Serdes.String()));
 
-        // Create a Kafka producer
-        KafkaProducer<String, String> producer = new KafkaProducer<>(producerProperties);
+        // Create and start the Kafka Streams application
+        KafkaStreams streams = new KafkaStreams(builder.build(), config);
+        streams.start();
 
-        // Start consuming and processing messages
-        while (true) {
-            ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-            System.out.println("records");
-            for (ConsumerRecord<String, String> record : records) {
-                String value = record.value();
-                
-                System.out.println(value);
-
-                // Parse the humidity value from the message
-                int humidity = parseHumidityFromMessage(value);
-                System.out.println(humidity);
-                // Check if humidity is higher than 70%
-                if (humidity > 70) {
-                    // Create the special message
-                    String specialMessage = createSpecialMessage(value);
-
-                    // Produce the special message to the output topic
-                    ProducerRecord<String, String> specialRecord = new ProducerRecord<>("processor", specialMessage);
-                    producer.send(specialRecord);
-                }
-            }
-        }
+        // Add shutdown hook to gracefully close the streams application
+        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
     }
+
 
     private static int parseHumidityFromMessage(String jsonString) {
 

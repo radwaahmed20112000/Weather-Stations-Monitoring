@@ -1,11 +1,6 @@
 # Data Acquisition
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> origin/main
 Step 1: Get Kafka
 
 	Download the latest Kafka release and extract it:
@@ -27,10 +22,6 @@ You can use this to confirm this API works on your machine.
 	
 	
 You can use this to see detected raining messages 
-	./bin/kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic station --from-beginning
+	./bin/kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic processor --from-beginning
 	
 
-<<<<<<< HEAD
->>>>>>> origin/master
-=======
->>>>>>> origin/main
