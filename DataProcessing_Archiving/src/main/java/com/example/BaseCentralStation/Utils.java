@@ -1,4 +1,4 @@
-package com.example.dataprocessing_archiving.BaseCentralStation;
+package com.example.BaseCentralStation;
 
 import org.json.JSONObject;
 
