@@ -1,12 +1,11 @@
-package com.example.dataprocessing_archiving.BaseCentralStation.DockerImage;
+package com.example.dataprocessing_archiving.BaseCentralStation;
 
-import com.example.dataprocessing_archiving.Bitcask.Bitcask;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.StringSerializer;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +15,6 @@ import java.util.Properties;
 // Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
 // then press Enter. You can now see whitespace characters in your code.
 public class BaseCentralStation {
-
 
     public static void main(String[] args) throws Exception {
 
@@ -44,7 +42,7 @@ public class BaseCentralStation {
                 statuses.add(status);
 //                bitcask.put(status.getStationID(), record.value());
             }
-            if(statuses.size() == 10000) {
+            if(statuses.size() == 100) {
                 parquetManager.setStatuses(statuses);
                 statuses = new ArrayList<>();
                 Thread thread = new Thread(parquetManager);

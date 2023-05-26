@@ -119,6 +119,8 @@
 			<version>20210307</version>
 		</dependency>
 
+
+
 	</dependencies>
 
 
@@ -135,6 +137,19 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<mainClass>com.example.dataprocessing_archiving.BaseCentralStation.BaseCentralStation</mainClass>
+					<arguments>
+						<argument>-XX:+UnlockCommercialFeatures</argument>
+						<argument>-XX:+FlightRecorder</argument>
+						<argument>-XX:StartFlightRecording=duration=60s,filename=myrecording.jfr</argument>
+					</arguments>
 				</configuration>
 			</plugin>
 		</plugins>

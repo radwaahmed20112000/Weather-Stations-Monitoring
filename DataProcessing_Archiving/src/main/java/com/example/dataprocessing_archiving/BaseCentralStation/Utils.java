@@ -1,4 +1,4 @@
-package com.example.dataprocessing_archiving.BaseCentralStation.DockerImage;
+package com.example.dataprocessing_archiving.BaseCentralStation;
 
 import org.json.JSONObject;
 
@@ -16,11 +16,12 @@ public class Utils {
         long timestamp = jsonObject.getLong("status_timestamp");
         JSONObject weatherObject = jsonObject.getJSONObject("weather");
 
+        long sNo = jsonObject.getLong("s_no");
         int humidity = weatherObject.getInt("humidity");
         int temperature = weatherObject.getInt("temperature");
         int windSpeed = weatherObject.getInt("wind_speed");
 
-        return new Status(stationID, batteryStatus, timestamp, humidity, temperature, windSpeed);
+        return new Status(stationID, sNo, batteryStatus, timestamp, humidity, temperature, windSpeed);
     }
 
     public static void pathCheck(String path) {

@@ -1,4 +1,4 @@
-package com.example.dataprocessing_archiving.BaseCentralStation.DockerImage;
+package com.example.dataprocessing_archiving.BaseCentralStation;
 import java.io.IOException;
 
 import org.apache.avro.Schema;
@@ -17,20 +17,26 @@ import org.apache.parquet.schema.MessageTypeParser;
 public class Status {
 
     private final long stationID;
+    private final long sNo;
     private final String batteryStatus;
     private final long statusTimestamp;
     private final int humidity;
     private final int temperature;
     private final int windSpeed;
 
-    public Status(long stationID, String batteryStatus, long statusTimestamp, int humidity,
+    public Status(long stationID, long sNo, String batteryStatus, long statusTimestamp, int humidity,
                           int temperature, int windSpeed) {
         this.stationID = stationID;
+        this.sNo = sNo;
         this.batteryStatus = batteryStatus;
         this.statusTimestamp = statusTimestamp;
         this.humidity = humidity;
         this.temperature = temperature;
         this.windSpeed = windSpeed;
+    }
+
+    public long getsNo() {
+        return sNo;
     }
 
     public long getStationID() {

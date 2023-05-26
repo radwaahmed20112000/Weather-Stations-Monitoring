@@ -10,8 +10,6 @@ import org.apache.kafka.common.serialization.StringSerializer;
 
 public class App 
 {
-	
-	
 	public static void sendToKafka(WeatherStationMock station , KafkaProducer<String,String> producer) {
 		ProducerRecord<String, String> record = new ProducerRecord<>("station",
 				station.getWeatherStatusMessage());

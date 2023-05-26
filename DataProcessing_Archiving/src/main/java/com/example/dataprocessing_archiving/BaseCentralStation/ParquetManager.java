@@ -1,4 +1,4 @@
-package com.example.dataprocessing_archiving.BaseCentralStation.DockerImage;
+package com.example.dataprocessing_archiving.BaseCentralStation;
 
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
@@ -26,6 +26,8 @@ public class ParquetManager implements Runnable {
     // Define the schema for the Parquet file
     private static final Schema schema = SchemaBuilder.record("StationStatus")
             .fields()
+            .name("station_id").type().longType().noDefault()
+            .name("s_no").type().longType().noDefault()
             .name("battery_status").type().stringType().noDefault()
             .name("status_timestamp").type().longType().noDefault()
             .name("weather_humidity").type().intType().noDefault()
@@ -40,9 +42,14 @@ public class ParquetManager implements Runnable {
 
         int year = dateTime.getYear();
         String month = Month.of(dateTime.getMonthValue()).toString();
-        int week = dateTime.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR) % 4;
+//        int week = dateTime.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR) % 4;
+        int day = dateTime.getDayOfMonth();
+        int hour = dateTime.getHour();
+        int minute = dateTime.getMinute();
 
-        return "Station" + parsedMessage.getStationID() + "/" + year + "/" + month + "/" + week + ".parquet";
+
+        return "Station" + parsedMessage.getStationID() + "/" + year + "/" + month + "/" + day + "/" + hour +
+                "/" + minute + ".parquet";
     }
 
     private void updateWriter(String generatedPath, long stationID) throws IOException {
@@ -65,9 +72,11 @@ public class ParquetManager implements Runnable {
 
                 long stationID = status.getStationID();
                 String generatedPath = generatePath(status);
-                if(generatedPath.compareTo(paths.get(stationID)) != 0)
+                if(paths.get(stationID) == null || generatedPath.compareTo(paths.get(stationID)) != 0)
                     updateWriter(generatedPath, stationID);
 
+                record.put("station_id", stationID);
+                record.put("s_no", status.getsNo());
                 record.put("battery_status", status.getBatteryStatus());
                 record.put("status_timestamp", status.getStatusTimestamp());
                 record.put("weather_humidity", status.getHumidity());
