@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: elastic
+spec:
+  selector:
+    app: elastic-kibana
+  ports:
+      - port: 9200
+        targetPort: 9200
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+spec:
+  selector:
+    app: elastic-kibana
+  ports:
+    - port: 5601
+      targetPort: 5601
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: elastic-kibana
+  name: elastic-kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elastic-kibana
+  template:
+    metadata:
+      labels:
+        app: elastic-kibana
+    spec:
+      hostname: elastic-kibana
+      containers:
+        image: nshou/elasticsearch-kibana
+        imagePullPolicy: IfNotPresent
+        name: elastic-kibana
+        ports:
+              - containerPort: 9200
+              - containerPort: 5601
+        volumeMounts:
+          - name: shared-volume
+            mountPath: /data
+      volumes:
+        - name: shared-volume
+          persistentVolumeClaim:
+            claimName: shared-volume-claim
+
