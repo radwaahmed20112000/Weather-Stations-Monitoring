@@ -1,5 +1,4 @@
-package com.example.dataprocessing_archiving.BaseCentralStation.DockerImage;
-
+package com.example.BaseCentralStation.DockerImage;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.apache.avro.generic.GenericData;

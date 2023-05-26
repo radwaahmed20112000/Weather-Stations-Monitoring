@@ -1,4 +1,4 @@
-package com.example.dataprocessing_archiving.BaseCentralStation.DockerImage;
+package com.example.BaseCentralStation.DockerImage;
 import java.io.IOException;
 
 import org.apache.avro.Schema;
