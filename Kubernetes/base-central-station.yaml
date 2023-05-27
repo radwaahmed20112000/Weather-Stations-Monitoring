@@ -4,6 +4,7 @@ metadata:
   labels:
     app: central-station
   name: central-station-service
+  namespace: kafka
 spec:
   ports:
     - port: 8085
@@ -16,6 +17,7 @@ metadata:
   labels:
     app: central-station
   name: central-station
+  namespace: kafka
 spec:
   replicas: 1
   selector:
@@ -28,23 +30,18 @@ spec:
     spec:
       hostname: central-station
       containers:
-        - image: radwaahmed/central-station
-          imagePullPolicy: IfNotPresent
-          name: central-station
-          ports:
-            - containerPort: 8085
-          volumeMounts:
-            - name: shared-volume
-              mountPath: /data
+      - env:
+        - name: KAFKA_SERVER
+          value: "kafka-service.kafka.svc.cluster.local:9092"
+        image: radwaahmed/central-station
+        imagePullPolicy: Always
+        name: central-station
+        ports:
+          - containerPort: 8085
+        volumeMounts:
+          - name: shared-volume-1
+            mountPath: /data
       volumes:
-        - name: shared-volume
+        - name: shared-volume-1
           persistentVolumeClaim:
-            claimName: shared-volume-claim
-
-
-
-
-
-
-
-
+            claimName: shared-volume-claim-1

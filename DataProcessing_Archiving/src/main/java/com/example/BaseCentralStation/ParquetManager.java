@@ -48,7 +48,7 @@ public class ParquetManager implements Runnable {
         int minute = dateTime.getMinute();
 
 
-        return "/data/Station" + parsedMessage.getStationID() + "/" + year + "/" + month + "/" + day + "/" + hour +
+        return "Station" + parsedMessage.getStationID() + "/" + year + "/" + month + "/" + day + "/" + hour +
                 "/" + minute + ".parquet";
     }
 

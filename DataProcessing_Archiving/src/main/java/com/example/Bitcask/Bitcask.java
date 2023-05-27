@@ -33,6 +33,7 @@ public class Bitcask {
             if(!success) throw new Exception("Error making a directory");
         }
         this.keyDir = new Hashtable<>();
+        reconstructKeyDir();
     }
     public void put(long key, String value) throws IOException {
         compactionLock.writeLock().lock();

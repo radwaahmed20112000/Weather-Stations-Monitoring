@@ -32,9 +32,11 @@ public class App
 	}
 
 	public static void main(String[] args) {
+
+		String bootstrapServers = System.getenv("KAFKA_SERVER");
 		Properties properties = new Properties();
 		properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-				"kafka-service:9092");
+				bootstrapServers);
 		properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
 				StringSerializer.class.getName());
 		properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
