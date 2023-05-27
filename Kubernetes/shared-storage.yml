@@ -9,7 +9,7 @@ spec:
     - ReadWriteMany
   storageClassName: shared-storage
   hostPath:
-    path: /home/sarah/Music/Weather-Stations-Monitoring/Storage
+    path: /home/radwa/Documents/College/Data Intensive/storage
 
 ---
 

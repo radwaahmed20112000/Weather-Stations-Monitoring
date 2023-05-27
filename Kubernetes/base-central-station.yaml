@@ -28,7 +28,7 @@ spec:
     spec:
       hostname: central-station
       containers:
-          image: radwaahmed/central-station
+        - image: radwaahmed/central-station
           imagePullPolicy: IfNotPresent
           name: central-station
           ports:

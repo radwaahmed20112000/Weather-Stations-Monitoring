@@ -39,7 +39,7 @@ public class BaseCentralStation {
 
 		Properties properties = new Properties();
 		properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-				"localhost:9092");
+				"kafka-service:9092");
 		properties.put(ConsumerConfig.GROUP_ID_CONFIG, "my-consumer-group");
 		properties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 		properties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
@@ -59,11 +59,12 @@ public class BaseCentralStation {
 				statuses.add(status);
 				bitcask.put(status.getStationID(), record.value());
 			}
-			if(statuses.size() == 100) {
+			if(statuses.size() >= 1000) {
 				parquetManager.setStatuses(statuses);
 				statuses = new ArrayList<>();
 				Thread thread = new Thread(parquetManager);
 				thread.start();
+				thread.join();
 			}
 		}
 	}
@@ -78,9 +79,10 @@ public class BaseCentralStation {
 			System.out.println("Station " + i + ": " + bitcask.get(i));
 	}
 
-	@Scheduled(initialDelay = 300 * 1000, fixedDelay = 300 * 1000)
-	public void getValue() throws Exception {
-		for (int i = 1; i < 11; i++)
-			System.out.println("Station " + i + ": " + bitcask.get(i));
+	// Every 5 minutes
+	@Scheduled(initialDelay = 60 * 1000, fixedDelay = 300 * 1000)
+	public void reconstruct() throws Exception {
+		System.out.println("Key Directory Reconstruction");
+		bitcask.reconstructKeyDir();
 	}
 }
