@@ -25,7 +25,7 @@ public class WeatherStationMock {
         this.random = new Random();
     }
 
-    public void sendWeatherStatus(int stationId) {
+    public boolean sendWeatherStatus(long stationId) {
         // Randomly change battery status
         int batteryStatusChance = random.nextInt(100);
         if (batteryStatusChance < 30) {
@@ -39,7 +39,7 @@ public class WeatherStationMock {
         // Randomly drop messages on a 10% rate
         int dropChance = random.nextInt(100);
         if (dropChance < 10) {
-            return;
+            return false;
         }
         JSONObject jsonData = openMeteo.getData(channelAdapter.timeStampToDate(statusTimestamp), stationId);
 
@@ -69,6 +69,7 @@ public class WeatherStationMock {
 
         // Increment sNo for the next message
         sNo++;
+        return true;
     }
 
     public String getWeatherStatusMessage() {

@@ -23,7 +23,7 @@ public class OpenMeteo {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         return dateFormat.format(date);
     }
-    public JSONObject getData(Date date, int stationId) {
+    public JSONObject getData(Date date, long stationId) {
 
         try{
             String formattedDate = getDate(date);
