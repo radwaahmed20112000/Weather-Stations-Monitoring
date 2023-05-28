@@ -2,14 +2,11 @@ from elasticsearch import Elasticsearch
 from pyarrow.parquet import ParquetFile
 
 # Elasticsearch configuration
-es = Elasticsearch(hosts=[{'host': 'localhost', 'port': 9200, 'scheme':'http'}])
+es = Elasticsearch(hosts=[{'host': 'localhost', 'port': 9200, 'scheme': 'http'}])
 index_name = 'weather_station_index'
 
-# List of Parquet file paths
-parquet_files = ['/home/sarah/Downloads/9.parquet']
-# Iterate through Parquet files
-for file_path in parquet_files:
-    # Read Parquet file
+
+def index_parquet(file_path):
     parquet = ParquetFile(file_path)
     df = parquet.read().to_pandas()
 
@@ -19,4 +16,5 @@ for file_path in parquet_files:
         es.index(index=index_name, body=data)
         print("Indexed document:", data)
 
-print("Indexing complete!")
+    print("Indexing complete!")
+
