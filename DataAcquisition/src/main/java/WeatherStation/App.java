@@ -36,7 +36,7 @@ public class App
         	for(int i=1 ;i<=10 ;i++)
         	{
         		 WeatherStationMock station = new WeatherStationMock(i);
-        		 station.sendWeatherStatus();
+        		 station.sendWeatherStatus(i);
         		 sendToKafka(station , producer);
         	}
             

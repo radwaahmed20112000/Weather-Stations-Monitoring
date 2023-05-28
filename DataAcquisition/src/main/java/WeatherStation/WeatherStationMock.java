@@ -1,5 +1,8 @@
 package WeatherStation;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Random;
 
 public class WeatherStationMock {
@@ -7,24 +10,22 @@ public class WeatherStationMock {
     private long sNo;
     private String batteryStatus;
     private long statusTimestamp;
-    private int humidity;
-    private int temperature;
-    private int windSpeed;
+
+    private WeatherData weatherData;
     private Random random;
     private String message = "" ;
 
+    OpenMeteo openMeteo = new OpenMeteo();
+    ChannelAdapter channelAdapter = new ChannelAdapter();
     public WeatherStationMock(long stationId) {
         this.stationId = stationId;
         this.sNo = 1;
         this.batteryStatus = "medium";
         this.statusTimestamp = System.currentTimeMillis() / 1000L;
-        this.humidity = 0;
-        this.temperature = 0;
-        this.windSpeed = 0;
         this.random = new Random();
     }
 
-    public void sendWeatherStatus() {
+    public void sendWeatherStatus(int stationId) {
         // Randomly change battery status
         int batteryStatusChance = random.nextInt(100);
         if (batteryStatusChance < 30) {
@@ -40,11 +41,14 @@ public class WeatherStationMock {
         if (dropChance < 10) {
             return;
         }
+        JSONObject jsonData = openMeteo.getData(channelAdapter.timeStampToDate(statusTimestamp), stationId);
 
-        // Generate weather data
-        humidity = random.nextInt(100);
-        temperature = random.nextInt(100) + 50; // temperature between 50-149 degrees Fahrenheit
-        windSpeed = random.nextInt(50);
+        try{
+            weatherData = channelAdapter.adapt(jsonData);
+        }
+        catch (JSONException e){
+            System.out.println("Error");
+        }
 
         // Construct weather status message
         String weatherStatusMsg = "{"
@@ -53,12 +57,12 @@ public class WeatherStationMock {
                 + "\"battery_status\": \"" + batteryStatus + "\","
                 + "\"status_timestamp\": " + statusTimestamp + ","
                 + "\"weather\": {"
-                + "\"humidity\": " + humidity + ","
-                + "\"temperature\": " + temperature + ","
-                + "\"wind_speed\": " + windSpeed
+                + "\"humidity\": " + weatherData.getHumidity() + ","
+                + "\"temperature\": " + weatherData.getTemperature() + ","
+                + "\"wind_speed\": " + weatherData.getTemperature()
                 + "}"
                 + "}";
-        
+
         this.message = weatherStatusMsg ;
         // Send weather status message to Kafka
         //sendToKafka(weatherStatusMsg);
