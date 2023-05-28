@@ -1,0 +1,93 @@
+PUT /weather_station_index
+
+{
+  "mappings": {
+    "properties": {
+      "station_id": {
+        "type": "long"
+      },
+      "s_no": {
+        "type": "long"
+      },
+      "battery_status": {
+        "type": "keyword"
+      },
+      "status_timestamp": {
+        "type": "date"
+      },
+      "weather": {
+        "properties": {
+          "humidity": {
+            "type": "integer"
+          },
+          "temperature": {
+            "type": "integer"
+          },
+          "wind_speed": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+HEAD weather_station_index
+
+
+POST weather_station_index/_search
+{
+  "size": 0,
+  "query": {
+    "term": {
+      "battery_status": "low"
+    }
+  },
+  "aggs": {
+    "station_id": {
+      "terms": {
+        "field": "station_id"
+      }
+    }
+  }
+}
+
+
+POST weather_station_index/_delete_by_query
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+
+POST weather_station_index/_search
+{
+  "size": 0,
+  "aggs": {
+    "sno_stats": {
+      "terms": {
+        "field": "station_id"
+      },
+      "aggs": {
+        "sno_stats_per_id": {
+          "scripted_metric": {
+            "init_script": "state.min = Double.POSITIVE_INFINITY; state.max = Double.NEGATIVE_INFINITY; state.count = 0;",
+            "map_script": "state.min = Math.min(state.min, doc['s_no'].value); state.max = Math.max(state.max, doc['s_no'].value); state.count++;",
+            "combine_script": "return [state.min, state.max, state.count];",
+            "reduce_script": "def min = Double.POSITIVE_INFINITY; def max = Double.NEGATIVE_INFINITY; def count = 0; for (state in states) { min = Math.min(min, state[0]); max = Math.max(max, state[1]); count += state[2]; } return max - min - count;"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+

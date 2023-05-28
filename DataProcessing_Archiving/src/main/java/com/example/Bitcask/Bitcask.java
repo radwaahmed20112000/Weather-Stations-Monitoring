@@ -12,13 +12,13 @@ import java.util.Objects;
 import java.util.concurrent.locks.*;
 
 
-//record structure: key valueSize timestamp value
-//record in hint files: key valueSize timestamp valuePos
-//keyDir: key --> {fileName, valueSize, timestamp,  valuePos}
+// record structure: key valueSize timestamp value
+// record in hint files: key valueSize timestamp valuePos
+// keyDir: key --> {fileName, valueSize, timestamp,  valuePos}
 public class Bitcask {
     private final String workingDir;
     private final String directoryPath;
-    private final long fileSizeThreshold = 1000L; //1 MB
+    private final long fileSizeThreshold = 1000000L; // 1 MB
     private final Hashtable<Long, String[]> keyDir;
     private final ReentrantReadWriteLock compactionLock;
 
@@ -29,14 +29,14 @@ public class Bitcask {
         File dir = new File(directoryPath);
         if(!dir.exists())
         {
-            boolean success = dir.mkdir();
+            boolean success = dir.mkdirs();
             if(!success) throw new Exception("Error making a directory");
         }
         this.keyDir = new Hashtable<>();
+        reconstructKeyDir();
     }
     public void put(long key, String value) throws IOException {
         compactionLock.writeLock().lock();
-        System.out.println("put started");
         try {
             String fileName = getActiveFile() +".bin";
             String filePath = this.directoryPath + fileName;
@@ -47,13 +47,11 @@ public class Bitcask {
             long valuePos = offset + Integer.BYTES + 2 * Long.BYTES;
             this.keyDir.put(key, new String[]{fileName, Integer.toString(value.length()), Long.toString(timestamp), Long.toString(valuePos)});
         } finally{
-            System.out.println("put ended");
             compactionLock.writeLock().unlock();
         }
     }
     public String get(long key) throws Exception {
         compactionLock.readLock().lock();
-        System.out.println("get started");
         long valuePos;
         int valueSize;
         RandomAccessFile file;
@@ -69,7 +67,6 @@ public class Bitcask {
             } else
                 throw new Exception("No such key in keyDir");
         } finally{
-            System.out.println("get ended");
             compactionLock.readLock().unlock();
         }
         return value;
@@ -121,7 +118,6 @@ public class Bitcask {
         String newDirectoryPath = this.workingDir + "compactTemp";
         File newDirectory = new File(newDirectoryPath);
         boolean success = newDirectory.mkdir();
-        System.out.println(newDirectoryPath);
         if(!success) throw new IOException("Couldn't create compact directory");
         File currentDirectory = new File(this.directoryPath);
         String createdFileName = createNewFile();
@@ -173,7 +169,6 @@ public class Bitcask {
             }
         }
         compactionLock.writeLock().lock();
-        System.out.println("replace started");
         try {
             //move files to the current directory and remove the compact temp folder
             //move new values to the keyDir:
@@ -182,7 +177,6 @@ public class Bitcask {
                 if(this.keyDir.contains(key))
                 {
 //                    long timestampOfNew = Long.parseLong(newKeyDir.get(key)[2]);
-//                    System.out.println(timestampOfNew);
                     long timestampOfOld = Long.parseLong(this.keyDir.get(key)[2]);
                     if(timestampOfOld < timestamp)
                         this.keyDir.put(key, newKeyDir.get(key));
@@ -215,8 +209,8 @@ public class Bitcask {
             }
             success = newDirectory.delete();
             if (!success) throw new IOException("Error deleting a file");
-        } finally{
-            System.out.println("replace ended");
+        } finally {
+//            System.out.println("replace ended");
             compactionLock.writeLock().unlock();
         }
     }
@@ -225,11 +219,12 @@ public class Bitcask {
         for(long key : keyDir.keySet())
         {
             String[] values = keyDir.get(key);
-            System.out.println("key " + key + "values: " + Arrays.toString(values));
+//            System.out.println("key " + key + "values: " + Arrays.toString(values));
         }
     }
     public void reconstructKeyDir() throws IOException {
         compactionLock.writeLock().lock();
+        this.keyDir.clear();
         try {
             File currentDir = new File(this.directoryPath);
             File[] files = currentDir.listFiles();
@@ -280,7 +275,7 @@ public class Bitcask {
                 long timestamp = file.readLong();
                 bytes = new byte[valueSize];
                 file.read(bytes);
-                System.out.println(key + " : " + valueSize + " " + timestamp + " , " +  new String(bytes, StandardCharsets.UTF_8));
+//                System.out.println(key + " : " + valueSize + " " + timestamp + " , " +  new String(bytes, StandardCharsets.UTF_8));
                 offset += Integer.BYTES + 2 * Long.BYTES + valueSize;
             }
         }
@@ -295,7 +290,7 @@ public class Bitcask {
                 int valueSize = file.readInt();
                 long timestamp = file.readLong();
                 long valuePos = file.readLong();
-                System.out.println(key + " : " + valueSize + " " +  timestamp + " , " + valuePos);
+//                System.out.println(key + " : " + valueSize + " " +  timestamp + " , " + valuePos);
                 offset += Integer.BYTES + 3 * Long.BYTES;
             }
         }

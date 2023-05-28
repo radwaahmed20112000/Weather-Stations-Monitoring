@@ -20,6 +20,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -81,12 +87,24 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -94,7 +112,6 @@
 			<artifactId>arrow-vector</artifactId>
 			<version>5.0.0</version>
 		</dependency>
-
 
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
@@ -130,6 +147,19 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<mainClass>com.example.dataprocessing_archiving.BaseCentralStation.BaseCentralStation</mainClass>
+					<arguments>
+						<argument>-XX:+UnlockCommercialFeatures</argument>
+						<argument>-XX:+FlightRecorder</argument>
+						<argument>-XX:StartFlightRecording=duration=60s,filename=myrecording.jfr</argument>
+					</arguments>
 				</configuration>
 			</plugin>
 		</plugins>

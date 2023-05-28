@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: elastic
+  namespace: kafka
 spec:
   selector:
     app: elastic-kibana
@@ -13,6 +14,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: kibana
+  namespace: kafka
 spec:
   selector:
     app: elastic-kibana
@@ -27,6 +29,7 @@ metadata:
   labels:
     app: elastic-kibana
   name: elastic-kibana
+  namespace: kafka
 spec:
   replicas: 1
   selector:
@@ -39,17 +42,17 @@ spec:
     spec:
       hostname: elastic-kibana
       containers:
-        image: nshou/elasticsearch-kibana
+      - image: nshou/elasticsearch-kibana
         imagePullPolicy: IfNotPresent
         name: elastic-kibana
         ports:
               - containerPort: 9200
               - containerPort: 5601
         volumeMounts:
-          - name: shared-volume
+          - name: shared-volume-1
             mountPath: /data
       volumes:
-        - name: shared-volume
+        - name: shared-volume-1
           persistentVolumeClaim:
-            claimName: shared-volume-claim
+            claimName: shared-volume-claim-1
 
